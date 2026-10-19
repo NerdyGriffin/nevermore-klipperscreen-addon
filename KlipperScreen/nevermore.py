@@ -22,6 +22,7 @@ SUBSCRIPTION = {
     VENT_VARS: ["vent_open"],
 }
 VENT_TEXT = {True: "Open", False: "Closed"}
+VENT_ICON = {True: "nevermore-vent-open", False: "nevermore-vent-closed"}
 
 
 class NevermoreTitlebar:
@@ -29,13 +30,19 @@ class NevermoreTitlebar:
         self.screen = screen
         self.bp = screen.base_panel
         self.items = {}
-        for key, icon in (("voc", "nevermore-voc"), ("vent", "nevermore-vent")):
+        for key, icon in (("voc", "nevermore-voc"), ("vent", VENT_ICON[True])):
             label = Gtk.Label(label="?", ellipsize=Pango.EllipsizeMode.NONE)
             box = Gtk.Box()
             box.pack_start(label, False, False, 0)
             eventbox = Gtk.EventBox()
             eventbox.add(box)
-            self.items[key] = {"icon": icon, "label": label, "box": box, "eventbox": eventbox}
+            self.items[key] = {
+                "icon": icon,
+                "image": None,
+                "label": label,
+                "box": box,
+                "eventbox": eventbox,
+            }
 
         self._orig_show = self.bp.show_titlebar_items
         self._orig_clear = self.bp.clear_titlebar_items
@@ -61,11 +68,16 @@ class NevermoreTitlebar:
             return None
         return printer.data.get(obj, {}).get(key)
 
+    def _img_size(self):
+        return self.screen.gtk.img_scale * self.bp.bts
+
     def _texts(self):
         gas = self._stat(NEVERMORE, "intake_gas")
         connected = self._stat(NEVERMORE, "connected")
         voc = f"{int(gas)}" if isinstance(gas, (int, float)) and connected is not False else "?"
-        vent = VENT_TEXT.get(self._stat(VENT_VARS, "vent_open"), "?")
+        vent_open = self._stat(VENT_VARS, "vent_open")
+        vent = VENT_TEXT.get(vent_open, "?")
+        self.items["vent"]["icon"] = VENT_ICON.get(vent_open, VENT_ICON[True])
         name_type = self.bp.titlebar_name_type
         if name_type == "full":
             return f"VOC: {voc}", f"Vent: {vent}"
@@ -77,19 +89,25 @@ class NevermoreTitlebar:
         voc, vent = self._texts()
         self.items["voc"]["label"].set_label(voc)
         self.items["vent"]["label"].set_label(vent)
+        image = self.items["vent"]["image"]
+        if image is not None:
+            size = self._img_size()
+            image.set_from_pixbuf(self.screen.gtk.PixbufFromIcon(self.items["vent"]["icon"], size, size))
 
     def _rebuild_icons(self):
-        img_size = self.screen.gtk.img_scale * self.bp.bts
+        img_size = self._img_size()
         for item in self.items.values():
             box = item["box"]
             for child in box.get_children():
                 if child is not item["label"]:
                     box.remove(child)
+            item["image"] = None
             if self.bp.titlebar_name_type is not None:
                 continue
             icon = self.screen.gtk.Image(item["icon"], img_size, img_size)
             box.pack_start(icon, False, False, 3)
             box.reorder_child(icon, 0)
+            item["image"] = icon
 
     # --- wrapped BasePanel / Screen methods ----------------------------------
 

@@ -66,6 +66,9 @@ function link_icons() {
   local icons_dir="$addon_path/KlipperScreen/nevermore_icons"
   for theme_dir in "$klipperscreen_dir"/styles/*/; do
     [ -d "$theme_dir/images" ] || continue
+    for stale in "$theme_dir"/images/nevermore-*.svg; do
+      [ -L "$stale" ] && [ ! -e "$stale" ] && rm -fv "$stale"
+    done
     for icon in "$icons_dir"/*.svg; do
       ln -sfv "$icon" "$theme_dir/images/"
     done

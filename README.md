@@ -50,7 +50,7 @@ Moonraker restarts KlipperScreen after an update.
 | Item | Source | Shown as |
 |---|---|---|
 | VOC | `nevermore.intake_gas` (VOC index, 100 = baseline) | number, `?` when the controller is disconnected |
-| Vent | `gcode_macro _NEVERMORE_VARS.vent_open` | `Open`, `Closed`, or `?` until a vent macro has run |
+| Vent | `gcode_macro _NEVERMORE_VARS.vent_open` | `Open`, `Closed`, or `?` until a vent macro has run; the shutter icon opens and closes with it |
 
 `titlebar_name_type: full` or `short` in the printer's section of `KlipperScreen.conf` replaces the
 icons with `VOC:` / `Vent:` or `V:` / `Vt:` prefixes, matching KlipperScreen's own items.
@@ -58,6 +58,6 @@ icons with `VOC:` / `Vent:` or `V:` / `Vt:` prefixes, matching KlipperScreen's o
 ## Credits
 
 Icons are from [Material Design Icons](https://pictogrammers.com/library/mdi/) (`air-filter`,
-`window-shutter-open`), Apache License 2.0.
+`window-shutter-open`, `window-shutter`), Apache License 2.0.
 
 Licensed under the GNU GPLv3, see `LICENSE`.
