@@ -98,6 +98,7 @@ function restart_klipperscreen() {
 function uninstall() {
   local exclude_file="$klipperscreen_dir/.git/info/exclude"
   rm -fv "$klipperscreen_dir/addons/nevermore.py"
+  rm -fv "$klipperscreen_dir"/addons/__pycache__/nevermore.*.pyc
   for link in "$klipperscreen_dir"/styles/*/images/nevermore-*.svg; do
     [ -L "$link" ] && rm -fv "$link"
   done
@@ -134,7 +135,7 @@ main() {
   check_enable_addons
   echo "[INFO] Nevermore KlipperScreen Add-On installed."
   restart_klipperscreen
-  echo "[INFO] Install on every host that runs KlipperScreen; the add-on stays idle on printers without [nevermore]."
+  echo "[INFO] Only printers with [nevermore] need this add-on; it stays idle on any other."
 }
 
 main

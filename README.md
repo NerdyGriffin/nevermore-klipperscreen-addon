@@ -16,7 +16,8 @@ September 2026), so no KlipperScreen file is modified.
   (`nevermore.cfg`) for the vent state, which is read from
   `gcode_macro _NEVERMORE_VARS.vent_open`. Without them the vent shows `?`.
 
-On a printer without `[nevermore]` the add-on does nothing.
+On a printer without `[nevermore]` the add-on does nothing, so it only needs installing on hosts
+whose printer has one.
 
 ## Install
 
