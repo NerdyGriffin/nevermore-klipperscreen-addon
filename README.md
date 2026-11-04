@@ -27,6 +27,9 @@ cd nevermore-klipperscreen-addon
 ./install.sh
 ```
 
+The installer restarts KlipperScreen if it is running and `sudo` needs no password; otherwise it
+prints the restart command.
+
 Then enable add-ons: in KlipperScreen go to Settings and turn on **Enable Add-ons**, or add
 `enable_addons: True` under `[main]` in `KlipperScreen.conf`. Restart KlipperScreen:
 
@@ -43,7 +46,9 @@ the icons into every theme's `images/` directory, and lists the icon links in
 ## Moonraker update manager
 
 Append the contents of `moonraker.conf` from this repo to `~/printer_data/config/moonraker.conf`.
-Moonraker restarts KlipperScreen after an update.
+Moonraker cannot restart KlipperScreen for this entry (`managed_services` only accepts the
+section's own name, `klipper` or `moonraker`), so restart it after an update:
+`sudo systemctl restart KlipperScreen`.
 
 ## Display
 

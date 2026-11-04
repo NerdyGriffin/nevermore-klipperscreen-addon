@@ -87,6 +87,14 @@ function check_enable_addons() {
   fi
 }
 
+function restart_klipperscreen() {
+  if [ "$test_mode" == "False" ] && sudo -n systemctl try-restart KlipperScreen 2>/dev/null; then
+    echo "[INFO] Restarted KlipperScreen."
+  else
+    echo "[INFO] Restart KlipperScreen: sudo systemctl restart KlipperScreen"
+  fi
+}
+
 function uninstall() {
   local exclude_file="$klipperscreen_dir/.git/info/exclude"
   rm -fv "$klipperscreen_dir/addons/nevermore.py"
@@ -96,7 +104,8 @@ function uninstall() {
   if [ -f "$exclude_file" ]; then
     sed -i '\#^styles/\*/images/nevermore-\*\.svg$#d' "$exclude_file"
   fi
-  echo "[INFO] Uninstalled. Restart KlipperScreen: sudo systemctl restart KlipperScreen"
+  echo "[INFO] Uninstalled."
+  restart_klipperscreen
   exit 0
 }
 
@@ -123,7 +132,8 @@ main() {
   install_files
   link_icons
   check_enable_addons
-  echo "[INFO] Nevermore KlipperScreen Add-On installed. Restart KlipperScreen: sudo systemctl restart KlipperScreen"
+  echo "[INFO] Nevermore KlipperScreen Add-On installed."
+  restart_klipperscreen
   echo "[INFO] Install on every host that runs KlipperScreen; the add-on stays idle on printers without [nevermore]."
 }
 
