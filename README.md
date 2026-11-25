@@ -57,7 +57,6 @@ section's own name, `klipper` or `moonraker`), so restart it after an update:
 |---|---|---|
 | VOC | `nevermore.intake_gas` (VOC index, 100 = baseline) | number, `?` when the controller is disconnected |
 | Vent | `gcode_macro _NEVERMORE_VARS.vent_open` | `Open`, `Closed`, or `?` until a vent macro has run; the shutter icon opens and closes with it |
-
 | Fan | `nevermore.speed`, `nevermore.rpm` | read-only bar at the end of the Fan panel with percent and RPM, `Disconnected` when the controller is disconnected |
 
 `titlebar_name_type: full` or `short` in the printer's section of `KlipperScreen.conf` replaces the
