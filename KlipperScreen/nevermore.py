@@ -1,4 +1,5 @@
-# Nevermore KlipperScreen add-on: intake VOC index and vent state in the title bar.
+# Nevermore KlipperScreen add-on: intake VOC index and vent state in the title bar,
+# and a read-only Nevermore row in the Fan panel.
 #
 # Copyright (C) 2026 NerdyGriffin
 #
@@ -18,7 +19,7 @@ from gi.repository import Gtk, Pango
 NEVERMORE = "nevermore"
 VENT_VARS = "gcode_macro _NEVERMORE_VARS"
 SUBSCRIPTION = {
-    NEVERMORE: ["intake_gas", "exhaust_gas", "connected"],
+    NEVERMORE: ["intake_gas", "exhaust_gas", "connected", "speed", "rpm"],
     VENT_VARS: ["vent_open"],
 }
 VENT_TEXT = {True: "Open", False: "Closed"}
@@ -160,6 +161,99 @@ class NevermoreTitlebar:
             api.object_subscription = orig_subscription
 
 
+# --- Fan panel row -----------------------------------------------------------
+#
+# The stock panel lists config-section fans only, and reads their speed through
+# Printer.get_fan_speed(), which returns 0 for an object without a config section.
+# The row is therefore kept out of Panel.devices and fed from printer.data directly.
+
+
+def _refresh_fan_row(panel):
+    bar = getattr(panel, "nevermore_bar", None)
+    if bar is None:
+        return
+    status = panel._printer.data.get(NEVERMORE, {})
+    if status.get("connected") is False:
+        bar.set_fraction(0)
+        bar.set_text("Disconnected")
+        return
+    speed = status.get("speed")
+    speed = min(max(float(speed), 0.0), 1.0) if isinstance(speed, (int, float)) else 0.0
+    text = f"{round(speed * 100)}%"
+    rpm = status.get("rpm")
+    if isinstance(rpm, (int, float)):
+        text += f" · {int(rpm)} RPM"
+    bar.set_fraction(speed)
+    bar.set_text(text)
+
+
+def _add_fan_row(panel):
+    if NEVERMORE not in panel._printer.data:
+        return
+    name = Gtk.Label(
+        halign=Gtk.Align.START,
+        valign=Gtk.Align.CENTER,
+        hexpand=True,
+        vexpand=True,
+        wrap=True,
+        wrap_mode=Pango.WrapMode.WORD_CHAR,
+    )
+    name.set_markup("\n<big><b>Nevermore</b></big>\n")
+    bar = Gtk.ProgressBar(hexpand=True, show_text=True)
+    fan_col = Gtk.Box(spacing=5)
+    fan_col.pack_start(bar, True, True, 10)
+    fan_row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+    fan_row.add(name)
+    fan_row.add(fan_col)
+    grid = panel.labels["devices"]
+    grid.attach(fan_row, 0, len(panel.devices), 1, 1)
+    grid.show_all()
+    panel.nevermore_bar = bar
+    _refresh_fan_row(panel)
+    logging.info("nevermore: fan panel row added")
+
+
+def _guarded(func, panel):
+    try:
+        func(panel)
+    except Exception as e:
+        logging.warning(f"nevermore: fan panel {func.__name__} failed: {e}")
+
+
+def patch_fan_panel():
+    from panels.fan import Panel
+
+    if getattr(Panel, "_nevermore_patched", False):
+        return
+    orig_load = Panel.load_fans
+    orig_update = Panel.process_update
+    orig_activate = getattr(Panel, "activate", None)
+
+    def load_fans(self):
+        orig_load(self)
+        _guarded(_add_fan_row, self)
+
+    def process_update(self, action, data):
+        result = orig_update(self, action, data)
+        if action == "notify_status_update" and NEVERMORE in data:
+            _guarded(_refresh_fan_row, self)
+        return result
+
+    def activate(self):
+        if orig_activate is not None:
+            orig_activate(self)
+        _guarded(_refresh_fan_row, self)
+
+    Panel.load_fans = load_fans
+    Panel.process_update = process_update
+    Panel.activate = activate
+    Panel._nevermore_patched = True
+
+
 def init(screen):
     NevermoreTitlebar(screen)
+    try:
+        patch_fan_panel()
+    except Exception as e:
+        logging.warning(f"nevermore: could not patch the fan panel: {e}")
     logging.info("nevermore: add-on initialised")

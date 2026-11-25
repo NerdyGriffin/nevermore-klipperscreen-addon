@@ -1,7 +1,8 @@
 # Nevermore KlipperScreen Add-On
 
 Shows the Nevermore StealthMax intake VOC index and the vent state (Open / Closed) in the
-KlipperScreen title bar, after the extruder, bed and chamber readouts. Display only.
+KlipperScreen title bar, after the extruder, bed and chamber readouts, and adds the Nevermore fan
+to the Fan panel. Display only.
 
 It uses KlipperScreen's add-on loader (`addons/<name>.py`, available in builds newer than v0.4.7,
 September 2026), so no KlipperScreen file is modified.
@@ -58,8 +59,13 @@ section's own name, `klipper` or `moonraker`), so restart it after an update:
 | VOC | `nevermore.intake_gas` (VOC index, 100 = baseline) | number, `?` when the controller is disconnected |
 | Vent | `gcode_macro _NEVERMORE_VARS.vent_open` | `Open`, `Closed`, or `?` until a vent macro has run; the shutter icon opens and closes with it |
 
+| Fan | `nevermore.speed`, `nevermore.rpm` | read-only bar at the end of the Fan panel with percent and RPM, `Disconnected` when the controller is disconnected |
+
 `titlebar_name_type: full` or `short` in the printer's section of `KlipperScreen.conf` replaces the
 icons with `VOC:` / `Vent:` or `V:` / `Vt:` prefixes, matching KlipperScreen's own items.
+
+The fan row is read-only because the controller sets the fan speed from its own VOC policy. To
+override it, use `SET_FAN_SPEED FAN=nevermore_fan SPEED=<0-1>`; omit `SPEED` to return to automatic.
 
 ## Credits
 
