@@ -135,7 +135,6 @@ main() {
   check_enable_addons
   echo "[INFO] Nevermore KlipperScreen Add-On installed."
   restart_klipperscreen
-  echo "[INFO] Only printers with [nevermore] need this add-on; it stays idle on any other."
 }
 
 main
